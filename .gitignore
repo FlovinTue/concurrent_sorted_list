@@ -6,6 +6,9 @@
 *.lo
 *.o
 *.obj
+*.ilk
+*.iobj
+*.ipdb
 
 # Precompiled Headers
 *.gch
@@ -25,8 +28,11 @@
 *.la
 *.a
 *.lib
-
+*.vs
 # Executables
 *.exe
 *.out
 *.app
+.vs/Tester/v15/.suo
+.vs/Tester/v15/Solution.VC.db
+*.exp
