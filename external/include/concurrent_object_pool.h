@@ -26,6 +26,8 @@
 
 #undef get_object
 
+namespace gdul {
+
 template <class Object>
 class concurrent_object_pool
 {
@@ -49,7 +51,7 @@ private:
 		std::atomic<block_node*> myPrevious;
 	};
 
-	cq::concurrent_queue<Object*> myUnusedObjects;
+	concurrent_queue<Object*> myUnusedObjects;
 
 	std::atomic<block_node*> myLastBlock;
 
@@ -130,4 +132,5 @@ inline void concurrent_object_pool<Object>::try_alloc_block()
 	for (std::size_t i = 0; i < myBlockSize; ++i) {
 		myUnusedObjects.push(&block[i]);
 	}
+}
 }

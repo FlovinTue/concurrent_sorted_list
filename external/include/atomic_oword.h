@@ -25,6 +25,10 @@
 #include <type_traits>
 #include <assert.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4324)
+
+namespace gdul{
 
 union oword
 {
@@ -50,9 +54,6 @@ union oword
 	int16_t myWords_s[8];
 	int8_t myBytes_s[16];
 };
-
-#pragma warning(push)
-#pragma warning(disable : 4324)
 
 class alignas(16) atomic_oword
 {
@@ -288,5 +289,6 @@ const bool atomic_oword::cas_internal(int64_t* const expected, const int64_t* co
 	return result;
 }
 #endif
+}
 
 #pragma warning(pop)

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include <concurrent_sorted_list.h>
+#include <concurrent_queue_.h>
 #include <thread>
 #include <random>
 #include <heap.h>
@@ -14,7 +15,7 @@ TEST_CLASS(UnitTest1)
 public:
 
 	TEST_METHOD(insert) {
-		csl::concurrent_sorted_list<uint64_t, int> list;
+		gdul::concurrent_sorted_list<uint64_t, int> list;
 
 		list.insert({2, 2});
 		list.insert({1, 1});
@@ -24,7 +25,7 @@ public:
 		Assert::IsTrue(list.size() == 2);
 	}
 	TEST_METHOD(try_peek){
-		csl::concurrent_sorted_list<uint64_t, int> list;
+		gdul::concurrent_sorted_list<uint64_t, int> list;
 
 		uint64_t firstKey(2);
 		uint64_t secondKey(1);
@@ -39,7 +40,7 @@ public:
 		Assert::IsTrue(key == secondKey);
 	}
 	TEST_METHOD(try_pop) {
-		csl::concurrent_sorted_list<uint64_t, int> list;
+		gdul::concurrent_sorted_list<uint64_t, int> list;
 
 		int first(2);
 		int second(1);
@@ -62,13 +63,13 @@ public:
 		Assert::IsFalse(list.try_pop(out1), L"Did not return empty upon try_pop. List should be empty");
 	}
 	TEST_METHOD(flood_insert) {
-		csl::concurrent_sorted_list<uint64_t, int> list;
+		gdul::concurrent_sorted_list<uint64_t, int> list;
 
 		list.insert({ 0, 0 });
 
 		uint32_t numInserts(2000);
 		uint32_t numthreads(8);
-		cq::concurrent_queue<uint64_t> que;
+		gdul::concurrent_queue<uint64_t> que;
 
 		{
 			std::atomic<bool> begin(false);
@@ -132,7 +133,7 @@ public:
 		}
 	}
 	TEST_METHOD(flood_pop) {
-		csl::concurrent_sorted_list<uint64_t, int> list;
+		gdul::concurrent_sorted_list<uint64_t, int> list;
 
 		uint32_t numInserts(500);
 		uint32_t numthreads(8);
@@ -177,9 +178,9 @@ public:
 		}
 	}
 	TEST_METHOD(flood_push_pop) {
-		csl::concurrent_sorted_list<uint64_t, int> list;
-		cq::concurrent_queue<uint64_t> inQue;
-		cq::concurrent_queue<uint64_t> outQue;
+		gdul::concurrent_sorted_list<uint64_t, int> list;
+		gdul::concurrent_queue<uint64_t> inQue;
+		gdul::concurrent_queue<uint64_t> outQue;
 
 		std::random_device rd;
 		std::mt19937 rng(rd());

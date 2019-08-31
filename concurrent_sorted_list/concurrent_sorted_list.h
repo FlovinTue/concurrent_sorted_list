@@ -34,7 +34,9 @@
 
 #define CSL_PADD(bytes) const uint8_t MAKE_UNIQUE_NAME(padding)[bytes] {}
 
-namespace csl
+namespace gdul
+{
+namespace csldetail
 {
 
 template <class KeyType, class ValueType>
@@ -42,8 +44,9 @@ class node;
 
 struct tiny_less;
 
+}
 
-template <class KeyType, class ValueType, class Comparator = tiny_less>
+template <class KeyType, class ValueType, class Comparator = csldetail::tiny_less>
 class concurrent_sorted_list
 {
 private:
@@ -56,9 +59,9 @@ public:
 	typedef KeyType key_type;
 	typedef ValueType value_type;
 	typedef allocator<uint8_t> allocator_type;
-	typedef asp::shared_ptr<node<key_type, value_type>, allocator_type> shared_ptr_type;
-	typedef asp::atomic_shared_ptr<node<key_type, value_type>, allocator_type> atomic_shared_ptr_type;
-	typedef asp::versioned_raw_ptr<node<key_type, value_type>, allocator_type> versioned_raw_ptr_type;
+	typedef shared_ptr<csldetail::node<key_type, value_type>, allocator_type> shared_ptr_type;
+	typedef atomic_shared_ptr<csldetail::node<key_type, value_type>, allocator_type> atomic_shared_ptr_type;
+	typedef versioned_raw_ptr<csldetail::node<key_type, value_type>, allocator_type> versioned_raw_ptr_type;
 
 	concurrent_sorted_list();
 	~concurrent_sorted_list();
@@ -84,11 +87,11 @@ private:
 	struct alloc_size_rep
 	{
 		std::pair<key_type, value_type> dummy1;
-		asp::atomic_shared_ptr<int> dummy2;
+		atomic_shared_ptr<int> dummy2;
 	};
 	class alloc_type
 	{
-		uint8_t myBlock[asp::shared_ptr<alloc_size_rep>::Alloc_Size_Make_Shared];
+		uint8_t myBlock[shared_ptr<alloc_size_rep>::Alloc_Size_Make_Shared];
 	};
 
 	template <class Dummy>
@@ -132,7 +135,7 @@ inline concurrent_sorted_list<KeyType, ValueType, Comparator>::concurrent_sorted
 	: mySize(0)
 	, myMemoryPool(128)
 	, myAllocator(&myMemoryPool)
-	, myFrontSentry(asp::make_shared<node<key_type, value_type>, allocator_type>(myAllocator))
+	, myFrontSentry(make_shared<csldetail::node<key_type, value_type>, allocator_type>(myAllocator))
 {
 	static_assert(std::is_integral<key_type>::value || std::is_floating_point<key_type>::value, "Only integers and floats allowed as key type");
 }
@@ -154,7 +157,7 @@ inline void concurrent_sorted_list<KeyType, ValueType, Comparator>::insert(const
 template<class KeyType, class ValueType, class Comparator>
 inline void concurrent_sorted_list<KeyType, ValueType, Comparator>::insert(std::pair<key_type, value_type>&& in)
 {
-	shared_ptr_type entry(asp::make_shared<node<key_type, value_type>, allocator_type>(myAllocator));
+	shared_ptr_type entry(make_shared<csldetail::node<key_type, value_type>, allocator_type>(myAllocator));
 	entry->myKeyValuePair = std::move(in);
 
 	while (!try_insert(entry));
@@ -197,16 +200,16 @@ inline const bool concurrent_sorted_list<KeyType, ValueType, Comparator>::try_pe
 template<class KeyType, class ValueType, class Comparator>
 inline void concurrent_sorted_list<KeyType, ValueType, Comparator>::unsafe_clear()
 {
-	std::vector<node<key_type, value_type>*> arr;
+	std::vector<csldetail::node<key_type, value_type>*> arr;
 	arr.reserve(mySize.load(std::memory_order_acquire));
 
-	node<key_type, value_type>* prev(static_cast<node<key_type, value_type>*>(myFrontSentry));
+	csldetail::node<key_type, value_type>* prev(static_cast<csldetail::node<key_type, value_type>*>(myFrontSentry));
 
 	for (size_t i = 0; i < mySize.load(std::memory_order_relaxed); ++i) {
-		prev = static_cast<node<key_type, value_type>*>(prev->myNext);
+		prev = static_cast<csldetail::node<key_type, value_type>*>(prev->myNext);
 		arr.push_back(prev);
 	}
-	for (typename std::vector<node<key_type, value_type>*>::reverse_iterator it = arr.rbegin(); it != arr.rend(); ++it) {
+	for (typename std::vector<csldetail::node<key_type, value_type>*>::reverse_iterator it = arr.rbegin(); it != arr.rend(); ++it) {
 		(*it)->myNext.unsafe_store(nullptr);
 	}
 	mySize.store(0, std::memory_order_relaxed);
@@ -218,7 +221,7 @@ inline const bool concurrent_sorted_list<KeyType, ValueType, Comparator>::try_in
 	shared_ptr_type last(nullptr);
 	shared_ptr_type current(myFrontSentry->myNext.load());
 
-	node<key_type, value_type>* insertionPoint(static_cast<node<key_type, value_type>*>(myFrontSentry));
+	csldetail::node<key_type, value_type>* insertionPoint(static_cast<csldetail::node<key_type, value_type>*>(myFrontSentry));
 
 	while (current) {
 		if (myComparator(entry->myKeyValuePair.first, current->myKeyValuePair.first)) {
@@ -246,7 +249,7 @@ inline const bool concurrent_sorted_list<KeyType, ValueType, Comparator>::try_in
 		else {
 			last = std::move(current);
 			current = std::move(next);
-			insertionPoint = static_cast<node<key_type, value_type>*>(last);
+			insertionPoint = static_cast<csldetail::node<key_type, value_type>*>(last);
 		}
 	};
 
@@ -306,6 +309,8 @@ inline const bool concurrent_sorted_list<KeyType, ValueType, Comparator>::try_po
 
 	return true;
 }
+namespace csldetail
+{
 template <class KeyType, class ValueType>
 class node
 {
@@ -333,4 +338,5 @@ struct tiny_less
 		return a < b;
 	};
 };
+}
 }
