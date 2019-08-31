@@ -21,7 +21,7 @@
 #pragma once
 
 #include <assert.h>
-#include <concurrent_queue_.h>
+#include <gdul\concurrent_queue.h>
 #include <atomic>
 
 #undef get_object
