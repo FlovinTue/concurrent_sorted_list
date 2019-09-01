@@ -58,7 +58,7 @@ inline heap<T, Comparator>::heap(const SizeType initCapacity)
 template<class T, class Comparator>
 const inline typename heap<T, Comparator>::SizeType heap<T, Comparator>::size() const
 {
-	return mySize.load(std::memory_order_relaxed);
+	return myStorage.size();
 }
 template<class T, class Comparator>
 inline void heap<T, Comparator>::push(const T & in, const KeyType key)
